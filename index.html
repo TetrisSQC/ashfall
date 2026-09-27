@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ashfall: Frontline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="game"></div>
+
+<div id="hud" class="hidden">
+  <div id="compass"><div id="compass-strip"></div><div id="compass-marker"></div></div>
+  <div id="minimap-wrap"><canvas id="minimap" width="220" height="220"></canvas><div id="minimap-ring"></div></div>
+  <div id="crosshair">
+    <div class="ch ch-t"></div><div class="ch ch-b"></div><div class="ch ch-l"></div><div class="ch ch-r"></div>
+    <div class="ch-dot"></div>
+  </div>
+  <div id="hitmarker"><i></i><i></i><i></i><i></i></div>
+  <div id="dmg-indicators"></div>
+  <div id="killfeed"></div>
+  <div id="score-pops"></div>
+  <div id="weapon-info">
+    <div id="ammo"><span id="ammo-mag">30</span><span id="ammo-reserve">/ 120</span></div>
+    <div id="ammo-bar"></div>
+    <div id="weapon-name">HK G36 <b>AUTO</b></div>
+    <div id="equipment"><span class="nade"></span><span class="nade"></span><span class="nade"></span></div>
+  </div>
+  <div id="match-info">
+    <div id="wave-label">WAVE <b id="wave-num">1</b></div>
+    <div id="score-label">SCORE <b id="score-num">0</b></div>
+    <div id="hostiles-label">HOSTILES <b id="hostiles-num">0</b></div>
+  </div>
+  <div id="prompt"></div>
+  <div id="banner"><div id="banner-title"></div><div id="banner-sub"></div></div>
+  <div id="blood"></div>
+  <div id="flash"></div>
+</div>
+
+<div id="menu">
+  <div id="menu-bg"></div>
+  <div id="menu-inner">
+    <div id="menu-kicker">OPERATION // ASHFALL</div>
+    <h1>ASHFALL<span>FRONTLINE</span></h1>
+    <div id="loading">
+      <div id="load-text">GENERATING THEATER…</div>
+      <div id="load-bar"><div id="load-fill"></div></div>
+    </div>
+    <button id="deploy" class="hidden">DEPLOY</button>
+    <div id="controls">
+      <div><kbd>WASD</kbd> Move</div><div><kbd>MOUSE</kbd> Aim</div>
+      <div><kbd>LMB</kbd> Fire</div><div><kbd>RMB</kbd> Aim down sights</div>
+      <div><kbd>SHIFT</kbd> Sprint</div><div><kbd>C</kbd> Crouch / Slide</div>
+      <div><kbd>SPACE</kbd> Jump</div><div><kbd>R</kbd> Reload</div>
+      <div><kbd>G</kbd> Frag grenade</div><div><kbd>V</kbd> Melee</div>
+      <div><kbd>Q</kbd> Graphics quality</div><div><kbd>ESC</kbd> Pause</div>
+    </div>
+    <div id="quality-label">GRAPHICS: <b id="quality-val">ULTRA</b></div>
+    <div id="credits">G36 model: <a href="https://sketchfab.com/3d-models/low-poly-hk-g36-526ae321f20c4d62a0fddd5c93783a79" target="_blank" rel="noopener">"Low-Poly HK G36"</a> by TastyTony · Soldier model: <a href="https://sketchfab.com/3d-models/fsb-operator-43a561e941704eefb1ab0614be4f0049" target="_blank" rel="noopener">"FSB Operator"</a> by Mateusz Woliński · both <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></div>
+  </div>
+</div>
+
+<div id="gameover" class="hidden">
+  <h2>K.I.A.</h2>
+  <div id="go-stats"></div>
+  <button id="redeploy">REDEPLOY</button>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

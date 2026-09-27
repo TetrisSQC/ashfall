@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enemy Anim Lab</title>
+<style>
+  :root { --bg: #101214; --panel: rgba(18, 21, 24, 0.94); --line: #2a2f35; --text: #d9dee3; --dim: #8a939c; --accent: #f2c14e; --bad: #ff5a4f; --good: #5ad17a; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font: 13px/1.4 -apple-system, system-ui, sans-serif; }
+  #view { position: fixed; inset: 0; }
+  #panel { position: fixed; top: 12px; left: 12px; width: 300px; max-height: calc(100% - 24px); overflow-y: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  h1 { font-size: 14px; letter-spacing: 1px; color: var(--accent); margin-bottom: 8px; }
+  h2 { font-size: 11px; letter-spacing: 1.5px; color: var(--dim); text-transform: uppercase; margin: 14px 0 6px; border-top: 1px solid var(--line); padding-top: 10px; }
+  .row { display: grid; grid-template-columns: 96px 1fr 44px; align-items: center; gap: 6px; margin: 4px 0; }
+  .row output { text-align: right; color: var(--dim); font-variant-numeric: tabular-nums; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  button { background: #1c2126; color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 5px 4px; font-size: 12px; cursor: pointer; }
+  button:hover { border-color: var(--dim); }
+  button.on { background: var(--accent); color: #111; border-color: var(--accent); }
+  label.chk { display: flex; gap: 6px; align-items: center; margin: 3px 0; cursor: pointer; }
+  #stats { position: fixed; top: 12px; right: 12px; width: 250px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-variant-numeric: tabular-nums; }
+  #stats div { display: flex; justify-content: space-between; margin: 2px 0; }
+  #stats b { font-weight: 600; }
+  .bad { color: var(--bad); } .good { color: var(--good); }
+  #graph { display: block; width: 100%; height: 90px; margin-top: 8px; background: #0c0e10; border-radius: 4px; }
+  #hint { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); color: var(--dim); font-size: 12px; }
+  #loading { position: fixed; inset: 0; display: grid; place-items: center; color: var(--dim); }
+</style>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }
+</script>
+</head>
+<body>
+<div id="view"></div>
+<div id="loading">Lade Soldat…</div>
+<div id="panel">
+  <h1>ENEMY ANIM LAB</h1>
+  <div class="modes" id="modes">
+    <button data-mode="idle">Idle</button><button data-mode="walk">Gehen</button><button data-mode="run">Rennen</button>
+    <button data-mode="strafe">Seitwärts</button><button data-mode="back">Rückwärts</button><button data-mode="crouch">Hocke</button>
+    <button data-mode="crouchwalk">Hockgang</button><button data-mode="ai">KI-Pfad</button><button data-mode="turn">Drehen</button>
+  </div>
+  <h2>Parameter</h2>
+  <div class="row"><span>Tempo m/s</span><input id="speed" type="range" min="0" max="5" step="0.05" value="1.6"><output></output></div>
+  <div class="row"><span>Blick vs. Laufr.</span><input id="facing" type="range" min="-180" max="180" step="5" value="0"><output></output></div>
+  <div class="row"><span>Hocke</span><input id="crouch" type="range" min="0" max="1" step="0.01" value="0"><output></output></div>
+  <div class="row"><span>Zielen (Pitch)</span><input id="pitch" type="range" min="-0.8" max="0.8" step="0.01" value="0"><output></output></div>
+  <div class="row"><span>Zeitlupe</span><input id="timescale" type="range" min="0.05" max="2" step="0.05" value="1"><output></output></div>
+  <h2>Waffenhaltung</h2>
+  <div class="modes" id="ready">
+    <button data-ready="auto" class="on">Auto</button><button data-ready="0">Anschlag</button><button data-ready="1">Low-Ready</button>
+  </div>
+  <h2>Aktionen</h2>
+  <div class="modes">
+    <button id="flinch">Treffer</button><button id="die0">Tod</button><button id="die1">Kopfschuss</button>
+    <button id="pause">Pause</button><button id="step">1 Frame</button><button id="reset">Reset</button>
+  </div>
+  <h2>Anzeige</h2>
+  <label class="chk"><input type="checkbox" id="showModel" checked> Soldatenmodell</label>
+  <label class="chk"><input type="checkbox" id="showRig"> Steuer-Rig (prozedural)</label>
+  <label class="chk"><input type="checkbox" id="showSkel"> Mixamo-Skelett</label>
+  <label class="chk"><input type="checkbox" id="showTrail" checked> Fußspuren (Rutschen)</label>
+  <label class="chk"><input type="checkbox" id="follow" checked> Kamera folgt</label>
+  <div class="modes" style="margin-top:6px"><button id="camFront">Vorne</button><button id="camSide">Seite</button><button id="camTop">Oben</button></div>
+  <label class="chk"><input type="checkbox" id="retarget" checked> Retargeting aktiv</label>
+</div>
+<div id="stats">
+  <div><span>Fuß-Rutschen (Standbein)</span><b id="slip">–</b></div>
+  <div><span>Schrittfrequenz</span><b id="cadence">–</b></div>
+  <div><span>Schrittlänge Soll/Ist</span><b id="stride">–</b></div>
+  <div><span>Laufrichtung rel. Blick</span><b id="dir">–</b></div>
+  <div><span>Hüfthöhe</span><b id="hipy">–</b></div>
+  <canvas id="graph" width="500" height="180"></canvas>
+  <div style="color:var(--dim);font-size:11px;margin-top:4px">Grafik: Hüftwinkel L/R (gelb/blau), Knie L/R (gestrichelt), Rutschen (rot)</div>
+</div>
+<div id="hint">Maus: drehen · Rad: zoomen · Rechtsklick: verschieben</div>
+<script type="module" src="js/animtool.js"></script>
+</body>
+</html>
